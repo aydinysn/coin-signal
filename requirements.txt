@@ -9,3 +9,6 @@ eventlet==0.33.3
 
 # HTTP requests for webhook
 requests==2.31.0
+
+# Environment variables
+python-dotenv==1.0.0
