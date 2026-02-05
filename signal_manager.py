@@ -114,7 +114,34 @@ class SignalManager:
             # Save to disk
             self._save_signals()
             
+            # Send to webhook (Railway dashboard) if configured
+            self._send_webhook(signal)
+            
             logger.info(f"Added signal: {signal.get('coin', 'UNKNOWN')} - Total: {len(self.signals)}")
+    
+    def _send_webhook(self, signal: Dict) -> None:
+        """Send signal to webhook URL (Railway dashboard)."""
+        try:
+            from config import WEBHOOK_URL
+            import requests
+            
+            if not WEBHOOK_URL:
+                return  # Webhook not configured
+            
+            response = requests.post(
+                WEBHOOK_URL,
+                json=signal,
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                logger.info(f"📡 Webhook sent: {signal.get('coin')}")
+            else:
+                logger.warning(f"Webhook failed ({response.status_code}): {signal.get('coin')}")
+                
+        except Exception as e:
+            # Webhook hatası ana işlemi durdurmamalı
+            logger.debug(f"Webhook error (non-critical): {e}")
     
     def get_all_signals(self, limit: Optional[int] = None) -> List[Dict]:
         """

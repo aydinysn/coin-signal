@@ -49,10 +49,31 @@ def get_signals():
         })
     except Exception as e:
         logger.error(f"Error getting signals: {e}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/signal', methods=['POST'])
+def receive_signal():
+    """Webhook endpoint: Receive signal from local bot."""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+        # Add signal to manager
+        signal_manager.add_signal(data)
+        
+        # Broadcast to all connected WebSocket clients
+        socketio.emit('new_signal', data)
+        
+        logger.info(f"✅ Received signal via webhook: {data.get('coin', 'UNKNOWN')}")
+        
+        return jsonify({'success': True, 'message': 'Signal received'}), 200
+        
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/signals/latest')

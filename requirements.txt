@@ -7,6 +7,5 @@ simple-websocket==1.0.0
 gunicorn==21.2.0
 eventlet==0.33.3
 
-# PostgreSQL
-psycopg2-binary==2.9.9
-python-dotenv==1.0.0
+# HTTP requests for webhook
+requests==2.31.0

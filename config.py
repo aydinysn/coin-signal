@@ -14,6 +14,12 @@ TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "7653317241:AAHnXALHts
 TELEGRAM_CHAT_ID: str = os.getenv("TELEGRAM_CHAT_ID", "-1003740980293")
 
 # =============================================================================
+# WEBHOOK CONFIGURATION (Railway Dashboard)
+# =============================================================================
+# Railway dashboard URL - .env'den al
+WEBHOOK_URL: str = os.getenv("WEBHOOK_URL", "")  # https://your-app.railway.app/api/signal
+
+# =============================================================================
 # BLOCKCHAIN RPC ENDPOINTS
 # =============================================================================
 ETH_RPC_URL: str = os.getenv("ETH_RPC_URL", "https://eth.llamarpc.com")
