@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Futures Intelligence Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1>🚀 Futures Intelligence Dashboard</h1>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-label">Total Signals</span>
+                    <span class="stat-value" id="totalSignals">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">🟢 Long</span>
+                    <span class="stat-value" id="longCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">🔴 Short</span>
+                    <span class="stat-value" id="shortCount">0</span>
+                </div>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="container">
+            <input type="text" id="searchInput" placeholder="🔍 Search by coin (e.g., BTC, ETH)..." />
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="LONG">🟢 Long</button>
+                <button class="filter-btn" data-filter="SHORT">🔴 Short</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signals Container -->
+    <main class="container">
+        <div id="signalsContainer" class="signals-grid">
+            <!-- Signals will be dynamically inserted here -->
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">📊</div>
+            <h2>No Signals Yet</h2>
+            <p>Waiting for trading signals from the bot...</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>Real-time signal monitoring • Powered by Flask & WebSocket</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
