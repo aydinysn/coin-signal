@@ -1,12 +1,10 @@
 """
 Signal Manager - Centralized signal storage and distribution
 Handles signal persistence and retrieval for the web dashboard.
-Supports both PostgreSQL (production) and JSON (fallback).
 """
 
 import json
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
@@ -19,7 +17,8 @@ class SignalManager:
     """
     Thread-safe signal manager for storing and retrieving trading signals.
     
-    Automatically uses PostgreSQL if DATABASE_URL is available, otherwise falls back to JSON.
+    Signals are stored in a JSON file and kept in memory for fast access.
+    Automatically maintains a maximum number of signals to prevent unbounded growth.
     """
     
     def __init__(self, storage_path: str = "data/dashboard_signals.json", max_signals: int = 1000):
@@ -28,28 +27,12 @@ class SignalManager:
         self.signals: List[Dict] = []
         self._lock = Lock()
         
-        # Check if PostgreSQL is available
-        self.database_url = os.environ.get('DATABASE_URL')
-        self.use_postgres = bool(self.database_url)
+        # Ensure data directory exists
+        self.storage_path.parent.mkdir(parents=True, exist_ok=True)
         
-        if self.use_postgres:
-            try:
-                from database import Database
-                self.db = Database(self.database_url)
-                logger.info("✅ Using PostgreSQL for signal storage")
-            except Exception as e:
-                logger.warning(f"PostgreSQL connection failed, falling back to JSON: {e}")
-                self.use_postgres = False
-                self.db = None
-        
-        # JSON fallback
-        if not self.use_postgres:
-            # Ensure data directory exists
-            self.storage_path.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Load existing signals from JSON
-            self._load_signals()
-            logger.info(f"SignalManager initialized with {len(self.signals)} existing signals (JSON mode)")
+        # Load existing signals
+        self._load_signals()
+        logger.info(f"SignalManager initialized with {len(self.signals)} existing signals")
     
     def _load_signals(self) -> None:
         """Load signals from JSON file."""
@@ -87,20 +70,6 @@ class SignalManager:
             if 'timestamp' not in signal:
                 signal['timestamp'] = datetime.now().isoformat()
             
-            # PostgreSQL mode
-            if self.use_postgres:
-                try:
-                    success = self.db.add_signal(signal)
-                    if success:
-                        logger.info(f"✅ Signal added to PostgreSQL: {signal.get('coin', 'UNKNOWN')}")
-                        # Also cleanup old signals periodically
-                        self.db.cleanup_old_signals(hours=5)
-                    return
-                except Exception as e:
-                    logger.error(f"PostgreSQL add failed: {e}, falling back to JSON")
-                    # Fall through to JSON mode
-            
-            # JSON mode (fallback or primary)
             # Add unique ID
             signal['id'] = len(self.signals) + 1
             
@@ -154,19 +123,9 @@ class SignalManager:
             List of signal dictionaries
         """
         with self._lock:
-            # PostgreSQL mode
-            if self.use_postgres:
-                try:
-                    signals = self.db.get_all_signals(limit=limit or 1000)
-                    return signals
-                except Exception as e:
-                    logger.error(f"PostgreSQL get failed: {e}, falling back to JSON")
-                    # Fall through to JSON mode
-            
-            # JSON mode (fallback or primary)
             if limit is None:
                 return self.signals.copy()
-            return self.signals[:limit].copy()
+            return self.signals[:limit]
     
     def get_latest_signal(self) -> Optional[Dict]:
         """Get the most recent signal."""
